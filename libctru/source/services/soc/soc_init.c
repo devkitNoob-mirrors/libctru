@@ -3,7 +3,6 @@
 #include <sys/socket.h>
 #include <3ds/ipc.h>
 
-static int     soc_open(struct _reent *r, void *fileStruct, const char *path, int flags, int mode);
 static int     soc_close(struct _reent *r, void *fd);
 static ssize_t soc_write(struct _reent *r, void *fd, const char *ptr, size_t len);
 static ssize_t soc_read(struct _reent *r, void *fd, char *ptr, size_t len);
@@ -13,7 +12,7 @@ soc_devoptab =
 {
   .name         = "soc",
   .structSize   = sizeof(Handle),
-  .open_r       = soc_open,
+  .open_r       = NULL,
   .close_r      = soc_close,
   .write_r      = soc_write,
   .read_r       = soc_read,
@@ -136,17 +135,6 @@ Result socExit(void)
 		RemoveDevice("soc:");
 
 	return ret;
-}
-
-static int
-soc_open(struct _reent *r,
-         void          *fileStruct,
-         const char    *path,
-         int           flags,
-         int           mode)
-{
-	r->_errno = ENOSYS;
-	return -1;
 }
 
 static int

@@ -32,20 +32,15 @@ static ssize_t   archive_read(struct _reent *r, void *fd, char *ptr, size_t len)
 static off_t     archive_seek(struct _reent *r, void *fd, off_t pos, int dir);
 static int       archive_fstat(struct _reent *r, void *fd, struct stat *st);
 static int       archive_stat(struct _reent *r, const char *file, struct stat *st);
-static int       archive_link(struct _reent *r, const char *existing, const char  *newLink);
 static int       archive_unlink(struct _reent *r, const char *name);
 static int       archive_chdir(struct _reent *r, const char *name);
 static int       archive_rename(struct _reent *r, const char *oldName, const char *newName);
 static int       archive_mkdir(struct _reent *r, const char *path, int mode);
 static DIR_ITER* archive_diropen(struct _reent *r, DIR_ITER *dirState, const char *path);
-static int       archive_dirreset(struct _reent *r, DIR_ITER *dirState);
 static int       archive_dirnext(struct _reent *r, DIR_ITER *dirState, char *filename, struct stat *filestat);
 static int       archive_dirclose(struct _reent *r, DIR_ITER *dirState);
-static int       archive_statvfs(struct _reent *r, const char *path, struct statvfs *buf);
 static int       archive_ftruncate(struct _reent *r, void *fd, off_t len);
 static int       archive_fsync(struct _reent *r, void *fd);
-static int       archive_chmod(struct _reent *r, const char *path, mode_t mode);
-static int       archive_fchmod(struct _reent *r, void *fd, mode_t mode);
 static int       archive_rmdir(struct _reent *r, const char *name);
 
 /// Used for only the SD archive, about which information can actually be found
@@ -75,22 +70,22 @@ archive_devoptab =
   .fstat_r      = archive_fstat,
   .stat_r       = archive_stat,
   .lstat_r      = archive_stat,
-  .link_r       = archive_link,
+  .link_r       = NULL,
   .unlink_r     = archive_unlink,
   .chdir_r      = archive_chdir,
   .rename_r     = archive_rename,
   .mkdir_r      = archive_mkdir,
   .dirStateSize = sizeof(archive_dir_t),
   .diropen_r    = archive_diropen,
-  .dirreset_r   = archive_dirreset,
+  .dirreset_r   = NULL,
   .dirnext_r    = archive_dirnext,
   .dirclose_r   = archive_dirclose,
-  .statvfs_r    = archive_statvfs,
+  .statvfs_r    = NULL,
   .ftruncate_r  = archive_ftruncate,
   .fsync_r      = archive_fsync,
   .deviceData   = 0,
-  .chmod_r      = archive_chmod,
-  .fchmod_r     = archive_fchmod,
+  .chmod_r      = NULL,
+  .fchmod_r     = NULL,
   .rmdir_r      = archive_rmdir,
 };
 
@@ -856,24 +851,6 @@ archive_stat(struct _reent *r,
   return -1;
 }
 
-/*! Hard link a file
- *
- *  @param[in,out] r        newlib reentrancy struct
- *  @param[in]     existing Path of file to link
- *  @param[in]     newLink  Path of new link
- *
- *  @returns 0 for success
- *  @returns -1 for error
- */
-static int
-archive_link(struct _reent *r,
-             const char    *existing,
-             const char    *newLink)
-{
-  r->_errno = ENOSYS;
-  return -1;
-}
-
 /*! Unlink a file
  *
  *  @param[in,out] r    newlib reentrancy struct
@@ -1097,22 +1074,6 @@ archive_diropen(struct _reent *r,
   return NULL;
 }
 
-/*! Reset an open directory to its intial state
- *
- *  @param[in,out] r        newlib reentrancy struct
- *  @param[in]     dirState Pointer to open directory state
- *
- *  @returns 0 for success
- *  @returns -1 for error
- */
-static int
-archive_dirreset(struct _reent *r,
-                 DIR_ITER      *dirState)
-{
-  r->_errno = ENOSYS;
-  return -1;
-}
-
 /*! Fetch the next entry of an open directory
  *
  *  @param[in,out] r        newlib reentrancy struct
@@ -1226,61 +1187,6 @@ archive_dirclose(struct _reent *r,
   return -1;
 }
 
-/*! Get filesystem statistics for an archive
- *
- *  @param[in,out] r    newlib reentrancy struct
- *  @param[in]     path Path to filesystem to get statistics of
- *  @param[out]    buf  Buffer to fill
- *
- *  @returns 0 for success
- *  @returns -1 for error
- */
-static int
-archive_statvfs(struct _reent  *r,
-                const char     *path,
-                struct statvfs *buf)
-{
-  // Result rc;
-  // u32 totalSize, directories, files;
-  // bool duplicateData;
-
-  // rc = FSUSER_GetFormatInfo(&totalSize, &directories, &files, &duplicateData, )
-
-  r->_errno = ENOSYS;
-
-  return -1;
-
-  // Result rc;
-  // FS_ArchiveResource resource;
-  // bool writable = false;
-
-  // rc = FSUSER_GetArchiveResource(&resource);
-
-  // if(R_SUCCEEDED(rc))
-  // {
-  //   buf->f_bsize   = resource.clusterSize;
-  //   buf->f_frsize  = resource.clusterSize;
-  //   buf->f_blocks  = resource.totalClusters;
-  //   buf->f_bfree   = resource.freeClusters;
-  //   buf->f_bavail  = resource.freeClusters;
-  //   buf->f_files   = 0; //??? how to get
-  //   buf->f_ffree   = resource.freeClusters;
-  //   buf->f_favail  = resource.freeClusters;
-  //   buf->f_fsid    = 0; //??? how to get
-  //   buf->f_flag    = ST_NOSUID;
-  //   buf->f_namemax = 0; //??? how to get
-
-  //   rc = FSUSER_IsarchiveWritable(&writable);
-  //   if(R_FAILED(rc) || !writable)
-  //     buf->f_flag |= ST_RDONLY;
-
-  //   return 0;
-  // }
-
-  // r->_errno = archive_translate_error(rc);
-  // return -1;
-}
-
 /*! Get filesystem statistics for the SD card
  *
  *  @param[in,out] r    newlib reentrancy struct
@@ -1383,42 +1289,6 @@ archive_fsync(struct _reent *r,
     return 0;
 
   r->_errno = archive_translate_error(rc);
-  return -1;
-}
-
-/*! Change a file's mode
- *
- *  @param[in,out] r    newlib reentrancy struct
- *  @param[in]     path Path to file to update
- *  @param[in]     mode New mode to set
- *
- *  @returns 0 for success
- *  @returns -1 for error
- */
-static int
-archive_chmod(struct _reent *r,
-              const char    *path,
-              mode_t        mode)
-{
-  r->_errno = ENOSYS;
-  return -1;
-}
-
-/*! Change an open file's mode
- *
- *  @param[in,out] r    newlib reentrancy struct
- *  @param[in]     fd   Pointer to archive_file_t
- *  @param[in]     mode New mode to set
- *
- *  @returns 0 for success
- *  @returns -1 for failure
- */
-static int
-archive_fchmod(struct _reent *r,
-               void          *fd,
-               mode_t        mode)
-{
-  r->_errno = ENOSYS;
   return -1;
 }
 
