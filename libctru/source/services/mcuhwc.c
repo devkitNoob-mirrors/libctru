@@ -147,7 +147,7 @@ Result MCUHWC_GetSoundSliderLevel(u8 *level)
 
 Result MCUHWC_Get3dSliderLevel(u8 *level)
 {
-	return MCUHWC_ReadRegister(8, &level, 1);
+	return MCUHWC_ReadRegister(8, level, 1);
 }
 
 Result MCUHWC_GetFwVerHigh(u8 *out)
