@@ -621,9 +621,11 @@ Result GSPGPU_AcquireRight(u8 flags)
 
 	Result ret=0;
 	if(R_FAILED(ret=svcSendSyncRequest(gspGpuHandle)))return ret;
-	if(R_SUCCEEDED(cmdbuf[1])) gspGpuRight=true;
 
-	return cmdbuf[1];
+	ret = (Result)cmdbuf[1];
+	if(R_SUCCEEDED(ret)) gspGpuRight=true;
+
+	return ret;
 }
 
 Result GSPGPU_ReleaseRight(void)
@@ -635,9 +637,11 @@ Result GSPGPU_ReleaseRight(void)
 
 	Result ret=0;
 	if(R_FAILED(ret=svcSendSyncRequest(gspGpuHandle)))return ret;
-	if(R_SUCCEEDED(cmdbuf[1])) gspGpuRight=false;
 
-	return cmdbuf[1];
+	ret = (Result)cmdbuf[1];
+	if(R_SUCCEEDED(ret)) gspGpuRight=false;
+
+	return ret;
 }
 
 Result GSPGPU_ImportDisplayCaptureInfo(GSPGPU_CaptureInfo* captureinfo)

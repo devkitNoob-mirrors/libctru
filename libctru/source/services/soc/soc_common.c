@@ -95,7 +95,7 @@ s32 _net_convert_error(s32 sock_retval)
 	if(sock_retval >= 0)
 		return sock_retval;
 
-	if(sock_retval < -sizeof(_net_error_code_map)
+	if(sock_retval < -(s32)sizeof(_net_error_code_map)
 	|| !_net_error_code_map[-sock_retval])
 		return NET_UNKNOWN_ERROR_OFFSET + sock_retval;
 	return -_net_error_code_map[-sock_retval];

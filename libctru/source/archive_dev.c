@@ -763,7 +763,7 @@ archive_seek(struct _reent *r,
   }
 
   /* TODO: A better check that prevents overflow. */
-  if(pos < 0 && offset < -pos)
+  if(pos < 0 && (s64)offset < -(s64)pos)
   {
     /* don't allow seek to before the beginning of the file */
     r->_errno = EINVAL;

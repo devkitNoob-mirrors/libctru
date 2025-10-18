@@ -53,7 +53,8 @@ static ssize_t _romfs_read(romfs_mount *mount, u64 offset, void* buffer, u32 siz
 
 static bool _romfs_read_chk(romfs_mount *mount, u64 offset, void* buffer, u32 size)
 {
-	return _romfs_read(mount, offset, buffer, size) == size;
+	ssize_t res = _romfs_read(mount, offset, buffer, size);
+	return res >= 0 && (u32)res == size;
 }
 
 //-----------------------------------------------------------------------------
