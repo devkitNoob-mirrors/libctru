@@ -37,8 +37,9 @@ Result httpcInit(u32 sharedmem_size)
 	{
 		__httpc_sharedmem_size = sharedmem_size;
 		__httpc_sharedmem_handle = 0;
+		__httpc_sharedmem_addr   = NULL;
 
-		if(__httpc_sharedmem_size)
+		if (__httpc_sharedmem_size)
 		{
 			__httpc_sharedmem_addr = memalign(0x1000, __httpc_sharedmem_size);
 			if(__httpc_sharedmem_addr==NULL)ret = -1;
@@ -51,18 +52,33 @@ Result httpcInit(u32 sharedmem_size)
 		}
 
 		if (R_SUCCEEDED(ret))ret = HTTPC_Initialize(__httpc_servhandle, __httpc_sharedmem_size, __httpc_sharedmem_handle);
-		if (R_FAILED(ret)) svcCloseHandle(__httpc_servhandle);
+
+		if (R_FAILED(ret))
+		{
+			svcCloseHandle(__httpc_servhandle);
+			__httpc_servhandle = 0;
+		}
 	}
-	if (R_FAILED(ret)) AtomicDecrement(&__httpc_refcount);
 
-	if (R_FAILED(ret) && __httpc_sharedmem_handle)
+	if (R_FAILED(ret))
 	{
-		svcCloseHandle(__httpc_sharedmem_handle);
-		__httpc_sharedmem_handle = 0;
-		__httpc_sharedmem_size = 0;
+		AtomicDecrement(&__httpc_refcount);
 
-		free(__httpc_sharedmem_addr);
-		__httpc_sharedmem_addr = NULL;
+		// Clean up shared memory block handle if it was created
+		if (__httpc_sharedmem_handle)
+		{
+			svcCloseHandle(__httpc_sharedmem_handle);
+			__httpc_sharedmem_handle = 0;
+		}
+
+		// Always free the allocated buffer if it exists (it is possible that svcCreateMemoryBlock failed)
+		if (__httpc_sharedmem_addr)
+		{
+			free(__httpc_sharedmem_addr);
+			__httpc_sharedmem_addr = NULL;
+		}
+
+		__httpc_sharedmem_size = 0;
 	}
 
 	return ret;
@@ -98,14 +114,14 @@ Result httpcOpenContext(httpcContext *context, HTTPC_RequestMethod method, const
 	if(R_FAILED(ret)) {
 		HTTPC_CloseContext(__httpc_servhandle, context->httphandle);
 		return ret;
-        }
+		}
 
 	ret = HTTPC_InitializeConnectionSession(context->servhandle, context->httphandle);
 	if(R_FAILED(ret)) {
 		svcCloseHandle(context->servhandle);
 		HTTPC_CloseContext(__httpc_servhandle, context->httphandle);
 		return ret;
-        }
+		}
 
 	if(use_defaultproxy==0)return 0;
 
@@ -114,7 +130,7 @@ Result httpcOpenContext(httpcContext *context, HTTPC_RequestMethod method, const
 		svcCloseHandle(context->servhandle);
 		HTTPC_CloseContext(__httpc_servhandle, context->httphandle);
 		return ret;
-        }
+		}
 
 	return 0;
 }
