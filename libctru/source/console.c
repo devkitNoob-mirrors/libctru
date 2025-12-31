@@ -752,7 +752,7 @@ static void newRow() {
 
 	if(currentConsole->cursorY  > currentConsole->windowHeight)  {
 		currentConsole->cursorY = currentConsole->windowHeight;
-		u16 *dst = &currentConsole->frameBuffer[((currentConsole->windowX - 1 ) * 8 * 240) + (239 - ((currentConsole->windowY) * 8))];
+		u16 *dst = &currentConsole->frameBuffer[((currentConsole->windowX - 1 ) * 8 * 240) + (239 - ((currentConsole->windowY-1) * 8))];
 		u16 *src = dst - 8;
 
 		int i,j;
@@ -760,7 +760,7 @@ static void newRow() {
 		for (i=0; i<(currentConsole->windowWidth)*8; i++) {
 			u32 *from = (u32*)((int)src & ~3);
 			u32 *to = (u32*)((int)dst & ~3);
-			for (j=0;j<(((currentConsole->windowHeight-2)*8)/2);j++) *(to--) = *(from--);
+			for (j=0;j<(((currentConsole->windowHeight-1)*8)/2);j++) *(to--) = *(from--);
 			dst += 240;
 			src += 240;
 		}
